@@ -1,0 +1,18 @@
+# Visual Studio left-overs
+*.suo
+*.ncb
+*.user
+*.ccscc
+*.cache
+
+# Compiled files
+*/bin/
+*/Bin/
+*/obj/
+*/Obj/
+*/Generated_Code/
+PrecompiledWeb
+*/ClientBin
+
+# Windows left-overs
+Thumbs.db
