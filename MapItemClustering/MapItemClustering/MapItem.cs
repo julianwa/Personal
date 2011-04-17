@@ -70,21 +70,57 @@ namespace MapItemClustering
         private Size _SizeInPixels;
         private Point _LocationNormalizedMercator;
 
-        public FixedSizeMapItem(Location location, Size sizeInPixels, int minZoomLevel = 0, int maxZoomLevel = int.MaxValue)
+        public FixedSizeMapItem(Location location,
+            PositionOrigin positionOrigin,
+            Size sizeInPixels,
+            int minZoomLevel = 0,
+            int maxZoomLevel = int.MaxValue)
             : base(location, minZoomLevel, maxZoomLevel)
         {
+            PositionOrigin = positionOrigin;
             _SizeInPixels = sizeInPixels;
             _LocationNormalizedMercator = location.ToNormalizedMercator();
+        }
+
+        public PositionOrigin PositionOrigin
+        {
+            get;
+            private set;
         }
 
         public override NormalizedMercatorRect BoundingRectAtZoomLevel(double zoomLevel)
         {
             double mapWidthInPixelsAtZoomLevel = 256 * Math.Pow(2, zoomLevel);
 
-            return new NormalizedMercatorRect(
-                _LocationNormalizedMercator,
-                _SizeInPixels.Width / mapWidthInPixelsAtZoomLevel,
-                _SizeInPixels.Height / mapWidthInPixelsAtZoomLevel);
+            double width = _SizeInPixels.Width / mapWidthInPixelsAtZoomLevel;
+            double height = _SizeInPixels.Height / mapWidthInPixelsAtZoomLevel;
+
+            Point center = _LocationNormalizedMercator;
+
+            if (PositionOrigin == PositionOrigin.BottomCenter)
+            {
+                center.Y -= height / 2;
+            }
+            else if (PositionOrigin == PositionOrigin.BottomLeft)
+            {
+                center.X += width / 2;
+                center.Y -= height / 2;
+            }
+            else if (PositionOrigin == PositionOrigin.BottomRight)
+            {
+                center.X -= width / 2;
+                center.Y -= height / 2;
+            }
+            else if (PositionOrigin == PositionOrigin.CenterLeft)
+            {
+                center.X += width / 2;
+            }
+            else if (PositionOrigin == PositionOrigin.CenterRight)
+            {
+                center.X -= width / 2;
+            }
+
+            return new NormalizedMercatorRect(center, width, height);
         }
     }
 }

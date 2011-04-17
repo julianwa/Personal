@@ -29,33 +29,29 @@ namespace MapItemClusteringTestApp
 
             _MapItemSet = new MapItemSet();
 
-            for (int i = 0; i < 100; i++)
+            for (int maxZoomLevel = 2; maxZoomLevel < 16; maxZoomLevel++)
             {
-                Location location = new Location(
-                    _Rnd.NextDouble() * 2 * MapMath.MercatorLatitudeLimit - MapMath.MercatorLatitudeLimit,
-                    _Rnd.NextDouble() * 10000 - 5000);
-
-                Pushpin pushpin = new Pushpin()
+                for (int numPushpins = 0; numPushpins < 10 * (1 << maxZoomLevel); numPushpins++)
                 {
-                    Location = location,
-                    Background = new SolidColorBrush(Colors.Gray)
-                };
-
-                //int maxZoomLevel = _Rnd.Next(20) + 1;
-                int maxZoomLevel = 40;
-
-                MapItem mapItem = new FixedSizeMapItem(location, new Size(35, 41), maxZoomLevel: maxZoomLevel)
-                {
-                    Tag = pushpin
-                };
-                mapItem.InViewChanged += new EventHandler(mapItem_InViewChanged);
-
-                _MapItemSet.Add(mapItem);
-
-                _PushPinLayer.Children.Add(pushpin);
+                    AddMapItem(maxZoomLevel);
+                }
             }
 
             KeyDown += new KeyEventHandler(MainPage_KeyDown);
+        }
+
+        private void AddMapItem(int maxZoomLevel)
+        {
+            int minZoomLevel = maxZoomLevel;
+
+            Location location = new Location(
+                _Rnd.NextDouble() * 2 * MapMath.MercatorLatitudeLimit - MapMath.MercatorLatitudeLimit,
+                _Rnd.NextDouble() * 10000 - 5000);
+
+            MapItem mapItem = new FixedSizeMapItem(location, PositionOrigin.BottomCenter, new Size(35, 41), minZoomLevel, maxZoomLevel);
+            mapItem.InViewChanged += new EventHandler(mapItem_InViewChanged);
+
+            _MapItemSet.Add(mapItem);
         }
 
         private void MainPage_KeyDown(object sender, KeyEventArgs e)
@@ -90,20 +86,26 @@ namespace MapItemClusteringTestApp
         void mapItem_InViewChanged(object sender, EventArgs e)
         {
             MapItem mapItem = (MapItem)sender;
-            ((Pushpin)mapItem.Tag).Background = new SolidColorBrush(mapItem.InView ? Colors.Red : Colors.Gray);
-        }
 
-        private void QueryButton_Click(object sender, RoutedEventArgs e)
-        {
-            //_MapItemSet.UpdateVisibilty(_Map.BoundingRectangle, _Map.ZoomLevel);
+            if (mapItem.InView)
+            {
+                Pushpin pushpin = new Pushpin()
+                {
+                    Location = mapItem.Location,
+                    Background = new SolidColorBrush(Colors.Gray)
+                };
+
+                mapItem.Tag = pushpin;
+
+                _PushPinLayer.Children.Add(pushpin);
+            }
+            else
+            {
+                _PushPinLayer.Children.Remove((Pushpin)mapItem.Tag);
+            }
         }
 
         private void _Map_ViewChangeOnFrame(object sender, MapEventArgs e)
-        {
-            UpdateVisibility();
-        }
-
-        private void UpdateVisibility()
         {
             if (!_VisibilityUpdatePaused)
             {

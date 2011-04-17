@@ -26,6 +26,5 @@
             <map:MapLayer x:Name="_PushPinLayer" />
         </map:Map>
 
-        <Button x:Name="QueryButton" Content="Query" Width="50" Height="25" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,10,10,0" Click="QueryButton_Click" />
     </Grid>
 </UserControl>

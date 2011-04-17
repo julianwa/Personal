@@ -1,7 +1,7 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Windows;
 using Microsoft.Maps.MapControl;
-using System;
 
 namespace MapItemClustering
 {
@@ -19,11 +19,6 @@ namespace MapItemClustering
 
         public NormalizedMercatorRect(Point center, double width, double height)
         {
-            if (!new Rect(0, 0, 1, 1).Contains(center))
-            {
-                throw new ArgumentException("Center must be in Rect(0,0,1,1)");
-            }
-
             if (width <= 0 || height <= 0)
             {
                 throw new ArgumentException("Width and height must be positive.");
