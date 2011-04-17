@@ -3,10 +3,25 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:map="clr-namespace:Microsoft.Maps.MapControl;assembly=Microsoft.Maps.MapControl"
+    xmlns:mapcore="clr-namespace:Microsoft.Maps.MapControl.Core;assembly=Microsoft.Maps.MapControl"
     mc:Ignorable="d"
     d:DesignHeight="300" d:DesignWidth="400">
 
     <Grid x:Name="LayoutRoot" Background="White">
+        <map:Map x:Name="_Map"
+            CredentialsProvider="Aie9VJZMh7hTt_Wi4e9QkNC-NQ_8hXXi_qgLyYBR1g96nAuX-ds7gl0X-Ce9dgfm"
+            ScaleVisibility="Collapsed"
+            NavigationVisibility="Collapsed"
+            CopyrightVisibility="Collapsed"
+            LogoVisibility="Collapsed">
 
+            <map:Map.Mode>
+                <map:AerialMode Labels="False" />
+            </map:Map.Mode>
+            <map:MapLayer x:Name="_PushPinLayer" />
+        </map:Map>
+
+        <Button x:Name="QueryButton" Content="Query" Width="50" Height="25" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,10,10,0" Click="QueryButton_Click" />
     </Grid>
 </UserControl>

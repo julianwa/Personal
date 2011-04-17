@@ -60,6 +60,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Maps.MapControl, Version=1.0.1.0, Culture=neutral, PublicKeyToken=498d0d22d7936b73, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.Maps.MapControl.Common, Version=1.0.1.0, Culture=neutral, PublicKeyToken=498d0d22d7936b73, processorArchitecture=MSIL" />
     <Reference Include="mscorlib" />
     <Reference Include="System.Windows" />
     <Reference Include="system" />
@@ -95,6 +97,12 @@
       <Project>{D2B41E25-FB34-4A02-B869-BF7C39452675}</Project>
       <Name>MapItemClustering</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Lib\Microsoft.Maps.MapControl.Common.dll" />
+    <Content Include="Lib\Microsoft.Maps.MapControl.Common.xml" />
+    <Content Include="Lib\Microsoft.Maps.MapControl.dll" />
+    <Content Include="Lib\Microsoft.Maps.MapControl.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
