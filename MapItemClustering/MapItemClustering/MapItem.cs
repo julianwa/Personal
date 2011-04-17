@@ -12,14 +12,11 @@ using Microsoft.Maps.MapControl;
 
 namespace MapItemClustering
 {
-    public class MapItem
+    public abstract class MapItem
     {
-        public MapItem(Location location, Size size)
+        public MapItem(Location location)
         {
             Location = location;
-            Size = size;
-
-            LocationNormalizedMercator = Location.ToNormalizedMercator();
         }
 
         public Location Location
@@ -28,22 +25,35 @@ namespace MapItemClustering
             private set;
         }
 
-        public Point LocationNormalizedMercator
-        {
-            get;
-            private set;
-        }
-
-        public Size Size
-        {
-            get;
-            private set;
-        }
+        public abstract NormalizedMercatorRect BoundingRectAtZoomLevel(double zoomLevel);
 
         public object Tag
         {
             get;
             set;
+        }
+    }
+
+    public class FixedSizeMapItem : MapItem
+    {
+        private Size _SizeInPixels;
+        private Point _LocationNormalizedMercator;
+
+        public FixedSizeMapItem(Location location, Size sizeInPixels)
+            : base(location)
+        {
+            _SizeInPixels = sizeInPixels;
+            _LocationNormalizedMercator = location.ToNormalizedMercator();
+        }
+
+        public override NormalizedMercatorRect BoundingRectAtZoomLevel(double zoomLevel)
+        {
+            double mapWidthInPixelsAtZoomLevel = 256 * Math.Pow(2, zoomLevel);
+
+            return new NormalizedMercatorRect(
+                _LocationNormalizedMercator,
+                _SizeInPixels.Width / mapWidthInPixelsAtZoomLevel,
+                _SizeInPixels.Height / mapWidthInPixelsAtZoomLevel);
         }
     }
 }

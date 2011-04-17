@@ -27,18 +27,18 @@ namespace MapItemClusteringTestApp
 
             _MapItemSet = new MapItemSet();
 
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 1000; i++)
             {
                 Location location = new Location(
                     _Rnd.NextDouble() * 2 * MapMath.MercatorLatitudeLimit - MapMath.MercatorLatitudeLimit,
-                    _Rnd.NextDouble() * 360 - 180);
+                    _Rnd.NextDouble() * 10000 - 5000);
 
                 Pushpin pushpin = new Pushpin()
                 {
                     Location = location
                 };
 
-                _MapItemSet.Add(new MapItem(location, new Size(100, 100))
+                _MapItemSet.Add(new FixedSizeMapItem(location, new Size(35, 41))
                 {
                     Tag = pushpin
                 });
