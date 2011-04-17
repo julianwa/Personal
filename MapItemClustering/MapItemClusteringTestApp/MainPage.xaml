@@ -9,16 +9,20 @@
     d:DesignHeight="300" d:DesignWidth="400">
 
     <Grid x:Name="LayoutRoot" Background="White">
+
         <map:Map x:Name="_Map"
             CredentialsProvider="Aie9VJZMh7hTt_Wi4e9QkNC-NQ_8hXXi_qgLyYBR1g96nAuX-ds7gl0X-Ce9dgfm"
             ScaleVisibility="Collapsed"
             NavigationVisibility="Collapsed"
             CopyrightVisibility="Collapsed"
-            LogoVisibility="Collapsed">
+            LogoVisibility="Collapsed"
+            ViewChangeOnFrame="_Map_ViewChangeOnFrame"     
+            >
 
             <map:Map.Mode>
                 <map:AerialMode Labels="False" />
             </map:Map.Mode>
+            <map:MapLayer x:Name="_ViewportRectLayer" />
             <map:MapLayer x:Name="_PushPinLayer" />
         </map:Map>
 

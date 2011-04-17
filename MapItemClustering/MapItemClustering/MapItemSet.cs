@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.Maps.MapControl;
 
 namespace MapItemClustering
@@ -24,18 +25,27 @@ namespace MapItemClustering
         /// <param name="rect">The rect used for the query.</param>
         /// <param name="zoomLevel">The zoom level used for the query.</param>
         /// <returns></returns>
-        public IEnumerable<MapItem> Query(LocationRect locationRect, double zoomLevel)
+        public void UpdateVisibilty(LocationRect locationRect, double zoomLevel)
         {
             NormalizedMercatorRect queryRect = new NormalizedMercatorRect(locationRect);
 
+            int discreteZoomLevel = (int)Math.Floor(zoomLevel);
+
             foreach (MapItem mapItem in _MapItems)
             {
-                NormalizedMercatorRect itemRect = mapItem.BoundingRectAtZoomLevel(zoomLevel);
+                bool inView = false;
 
-                if (queryRect.Intersects(itemRect))
+                if (discreteZoomLevel <= mapItem.MaxZoomLevel && discreteZoomLevel >= mapItem.MinZoomLevel)
                 {
-                    yield return mapItem;
+                    NormalizedMercatorRect itemRect = mapItem.BoundingRectAtZoomLevel(zoomLevel);
+
+                    if (queryRect.Intersects(itemRect))
+                    {
+                        inView = true;
+                    }
                 }
+
+                mapItem.InView = inView;
             }
         }
     }

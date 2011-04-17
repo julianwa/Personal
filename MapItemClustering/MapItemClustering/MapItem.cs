@@ -1,22 +1,18 @@
 ﻿using System;
-using System.Net;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Ink;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Shapes;
 using Microsoft.Maps.MapControl;
 
 namespace MapItemClustering
 {
     public abstract class MapItem
     {
-        public MapItem(Location location)
+        bool _InView;
+
+        public MapItem(Location location, int minZoomLevel, int maxZoomLevel)
         {
             Location = location;
+            MinZoomLevel = minZoomLevel;
+            MaxZoomLevel = maxZoomLevel;
         }
 
         public Location Location
@@ -25,13 +21,48 @@ namespace MapItemClustering
             private set;
         }
 
-        public abstract NormalizedMercatorRect BoundingRectAtZoomLevel(double zoomLevel);
+        public int MinZoomLevel
+        {
+            get;
+            private set;
+        }
+
+        public int MaxZoomLevel
+        {
+            get;
+            private set;
+        }
 
         public object Tag
         {
             get;
             set;
         }
+
+        public bool InView
+        {
+            get
+            {
+                return _InView;
+            }
+
+            internal set
+            {
+                if (_InView != value)
+                {
+                    _InView = value;
+
+                    if (InViewChanged != null)
+                    {
+                        InViewChanged(this, EventArgs.Empty);
+                    }
+                }
+            }
+        }
+
+        public event EventHandler InViewChanged;
+
+        public abstract NormalizedMercatorRect BoundingRectAtZoomLevel(double zoomLevel);
     }
 
     public class FixedSizeMapItem : MapItem
@@ -39,8 +70,8 @@ namespace MapItemClustering
         private Size _SizeInPixels;
         private Point _LocationNormalizedMercator;
 
-        public FixedSizeMapItem(Location location, Size sizeInPixels)
-            : base(location)
+        public FixedSizeMapItem(Location location, Size sizeInPixels, int minZoomLevel = 0, int maxZoomLevel = int.MaxValue)
+            : base(location, minZoomLevel, maxZoomLevel)
         {
             _SizeInPixels = sizeInPixels;
             _LocationNormalizedMercator = location.ToNormalizedMercator();

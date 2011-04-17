@@ -39,8 +39,8 @@ namespace MapItemClustering
             }
             else
             {
-                nw.X = nw.X >= 0 ? (nw.X % 1) : (1 - (nw.X % 1));
-                se.X = se.X >= 0 ? (se.X % 1) : (1 - (se.X % 1));
+                nw.X = nw.X >= 0 ? (nw.X % 1) : (1 + (nw.X % 1));
+                se.X = se.X >= 0 ? (se.X % 1) : (1 + (se.X % 1));
             }
 
             InitRects(nw, se);
