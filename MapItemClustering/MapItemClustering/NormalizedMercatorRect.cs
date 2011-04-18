@@ -9,6 +9,11 @@ namespace MapItemClustering
     {
         private Rect[] _Rects;
 
+        public NormalizedMercatorRect(Rect rect)
+        {
+            _Rects = new Rect[] { rect };
+        }
+
         public NormalizedMercatorRect(LocationRect locationRect)
         {
             Point nw = locationRect.Northwest.ToNormalizedMercator();

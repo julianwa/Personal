@@ -12,9 +12,20 @@ namespace MapItemClustering
             _Items = new HashSet<MapItem>();
         }
 
-        public override void Add(MapItem item)
+        /// <summary>
+        /// Adds the specified item to the set.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>true if the element is added to the set; false if the element is already present.</returns>
+        public override bool Add(MapItem item)
         {
-            _Items.Add(item);
+            if (!_Items.Contains(item))
+            {
+                _Items.Add(item);
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>

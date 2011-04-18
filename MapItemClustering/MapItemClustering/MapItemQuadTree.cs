@@ -12,17 +12,51 @@ namespace MapItemClustering
 
         public MapItemQuadTree()
         {
-            _RootNode = new MapItemQuadTreeNode(new Rect(0, 0, 1, 1), 0);
+            _RootNode = new MapItemQuadTreeNode(null, 0);
             _NodesToVisit = new Stack<MapItemQuadTreeNode>();
         }
 
-        public void Add(MapItem item)
+        public IEnumerable<MapItemQuadTreeNode> Nodes
+        {
+            get
+            {
+                Debug.Assert(_NodesToVisit.Count == 0);
+
+                _NodesToVisit.Push(_RootNode);
+
+                while (_NodesToVisit.Count > 0)
+                {
+                    MapItemQuadTreeNode node = _NodesToVisit.Pop();
+
+                    yield return node;
+
+                    for (int childIdx = 0; childIdx < 4; childIdx++)
+                    {
+                        MapItemQuadTreeNode child = node.GetChild(childIdx);
+
+                        if (child != null)
+                        {
+                            _NodesToVisit.Push(child);
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Adds the specified item to the tree.
+        /// </summary>
+        /// <param name="item">The item to add.</param>
+        /// <returns>true if the element is added to the set; false if the element is already present.</returns>
+        public bool Add(MapItem item)
         {
             Debug.Assert(_NodesToVisit.Count == 0);
 
             _NodesToVisit.Push(_RootNode);
 
-            while (_NodesToVisit.Count > 0)
+            int numNodesVisited = 0;
+
+            for (; _NodesToVisit.Count > 0; numNodesVisited++)
             {
                 MapItemQuadTreeNode node = _NodesToVisit.Pop();
                 Debug.Assert(node.ZoomLevel <= item.MaxZoomLevel);
@@ -30,7 +64,15 @@ namespace MapItemClustering
 
                 if (node.ZoomLevel >= item.MinZoomLevel)
                 {
-                    node.AddMapItem(item);
+                    if (!node.AddMapItem(item))
+                    {
+                        Debug.Assert(numNodesVisited == 0);
+
+                        // If the item's present at this node, it will be present in all others in its 
+                        // [MinZoomLevel, MaxZoomLevel] range, so return early, indicating it's already in
+                        // the tree.
+                        return false;
+                    }
                 }
 
                 if (node.ZoomLevel < item.MaxZoomLevel)
@@ -47,10 +89,12 @@ namespace MapItemClustering
                     }
                 }
             }
+
+            return true;
         }
 
         /// <summary>
-        /// Removes the given element from the tree.
+        /// Removes the specified item from the tree.
         /// </summary>
         /// <param name="item">The item to remove.</param>
         /// <returns>true if the element is successfully found and removed; otherwise, false.</returns>
@@ -110,10 +154,12 @@ namespace MapItemClustering
                 throw new ArgumentException("rect out of range");
             }
 
+            int nodesVisited = 0;
+
             Debug.Assert(_NodesToVisit.Count == 0);
             _NodesToVisit.Push(_RootNode);
 
-            while (_NodesToVisit.Count > 0)
+            for (; _NodesToVisit.Count > 0; nodesVisited++)
             {
                 MapItemQuadTreeNode node = _NodesToVisit.Pop();
                 Debug.Assert(node.ZoomLevel <= zoomLevel);

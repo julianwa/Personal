@@ -8,14 +8,35 @@ namespace MapItemClustering
     {
         private MapItemQuadTreeNode[] _Children;
 
-        private List<MapItem> _Items;
+        private HashSet<MapItem> _Items;
 
-        public MapItemQuadTreeNode(Rect rect, int zoomLevel)
+        public MapItemQuadTreeNode(MapItemQuadTreeNode parent, int childIdx)
         {
-            Rect = rect;
-            ZoomLevel = zoomLevel;
+            Parent = parent;
+
+            if (Parent == null)
+            {
+                Rect = new Rect(0, 0, 1, 1);
+                ZoomLevel = 0;
+                X = Y = 0L;
+            }
+            else
+            {
+                Rect = parent.GetChildRect(childIdx);
+                ZoomLevel = parent.ZoomLevel + 1;
+
+                X = (Parent.X << 1) + (childIdx % 2);
+                Y = (Parent.Y << 1) + (childIdx / 2);
+            }
+
             _Children = new MapItemQuadTreeNode[4];
-            _Items = new List<MapItem>();
+            _Items = new HashSet<MapItem>();
+        }
+
+        public MapItemQuadTreeNode Parent
+        {
+            get;
+            private set;
         }
 
         public Rect Rect
@@ -30,6 +51,26 @@ namespace MapItemClustering
             private set;
         }
 
+        public long X
+        {
+            get;
+            private set;
+        }
+
+        public long Y
+        {
+            get;
+            private set;
+        }
+
+        public bool IsLeafNode
+        {
+            get
+            {
+                return _Children[0] == null && _Children[1] == null && _Children[2] == null && _Children[3] == null;
+            }
+        }
+
         public MapItemQuadTreeNode GetChild(int childIdx)
         {
             return _Children[childIdx];
@@ -41,7 +82,7 @@ namespace MapItemClustering
 
             if (child == null)
             {
-                child = _Children[childIdx] = new MapItemQuadTreeNode(GetChildRect(childIdx), ZoomLevel + 1);
+                child = _Children[childIdx] = new MapItemQuadTreeNode(this, childIdx);
             }
 
             return child;
@@ -74,9 +115,9 @@ namespace MapItemClustering
             return new Rect(new Point(Rect.X + offset.X, Rect.Y + offset.Y), size);
         }
 
-        public void AddMapItem(MapItem item)
+        public bool AddMapItem(MapItem item)
         {
-            _Items.Add(item);
+            return _Items.Add(item);
         }
 
         public bool RemoveMapItem(MapItem item)

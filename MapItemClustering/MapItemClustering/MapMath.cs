@@ -5,6 +5,11 @@ namespace MapItemClustering
     public static class MapMath
     {
         /// <summary>
+        /// Degrees per radian.
+        /// </summary>
+        public static readonly double DegreesPerRadian = 180.0 / Math.PI;
+
+        /// <summary>
         /// Radians per degree.
         /// </summary>
         public static readonly double RadiansPerDegree = Math.PI / 180.0;

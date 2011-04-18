@@ -28,38 +28,38 @@ namespace MapItemClusteringTestApp
 
             _CurrentMapItemSet = 0;
             _MapItemSets = new List<MapItemSet>
-            {
-                new BruteForceMapItemSet(),
-                new QuadTreeMapItemSet()
+            {                
+                new QuadTreeMapItemSet(),
+                new BruteForceMapItemSet()
             };
 
-            //for (int maxZoomLevel = 2; maxZoomLevel < 12; maxZoomLevel++)
-            //{
-            //    for (int numPushpins = 0; numPushpins < 10 * (1 << maxZoomLevel); numPushpins++)
-            //    {
-            //        AddMapItem(maxZoomLevel);
-            //    }
-            //}
+            List<MapItem> mapItems = new List<MapItem>();
 
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 1000; i++)
             {
-                AddMapItem(0, 18);
+                AddMapItem(mapItems, 0, 18);
+            }
+
+            _MapItems = new List<MapItem>(Clusterer.Cluster(mapItems));
+
+            foreach (MapItem item in _MapItems)
+            {
+                item.InViewChanged += new EventHandler(item_InViewChanged);
+                _MapItemSets.ForEach((set) => set.Add(item));
             }
 
             KeyDown += new KeyEventHandler(MainPage_KeyDown);
         }
 
-        private void AddMapItem(int minZoomLevel, int maxZoomLevel)
+        private void AddMapItem(List<MapItem> mapItems, int minZoomLevel, int maxZoomLevel)
         {
             Location location = new Location(
                 _Rnd.NextDouble() * 2 * MapMath.MercatorLatitudeLimit - MapMath.MercatorLatitudeLimit,
                 _Rnd.NextDouble() * 10000 - 5000);
 
-            MapItem item = new FixedSizeMapItem(location, PositionOrigin.BottomCenter, new Size(35, 41), minZoomLevel, maxZoomLevel);
-            item.InViewChanged += new EventHandler(item_InViewChanged);
+            MapItem item = new FixedSizeMapItem(location, PositionOrigin.Center, new Size(20, 20), minZoomLevel, maxZoomLevel);
 
-            _MapItems.Add(item);
-            _MapItemSets.ForEach((set) => set.Add(item));
+            mapItems.Add(item);
         }
 
         private void MainPage_KeyDown(object sender, KeyEventArgs e)
@@ -100,6 +100,10 @@ namespace MapItemClusteringTestApp
 
                 UpdateVisibility();
             }
+            else if (e.Key >= Key.D0 && e.Key <= Key.D9)
+            {
+                _Map.ZoomLevel = (int)e.Key - (int)Key.D0;
+            }
         }
 
         void item_InViewChanged(object sender, EventArgs e)
@@ -111,8 +115,9 @@ namespace MapItemClusteringTestApp
                 Pushpin pushpin = new Pushpin()
                 {
                     Location = item.Location,
-                    Background = new SolidColorBrush(_CurrentMapItemSet % 2 == 0 ? Colors.Gray : Colors.Purple),
-                    Tag = item
+                    Background = new SolidColorBrush(_CurrentMapItemSet % 2 == 0 ? Colors.Purple : Colors.Gray),
+                    Tag = item,
+                    Style = (Style)Resources["StoryPin"]
                 };
                 Canvas.SetZIndex(pushpin, _MapItems.IndexOf(item));
 
@@ -155,10 +160,10 @@ namespace MapItemClusteringTestApp
             if (!_VisibilityUpdatePaused)
             {
                 // If we're very close to a discrete zoom level, then choose that discrete zoom level. 
-                // Otherwise, choose the ceiling of the zoom level.
+                // Otherwise, choose the floor of the zoom level.
                 int zoomLevel = (int)(Math.Abs(_Map.ZoomLevel - Math.Round(_Map.ZoomLevel)) < 1e-4 ?
                     Math.Round(_Map.ZoomLevel) :
-                    Math.Ceiling(_Map.ZoomLevel));
+                    Math.Floor(_Map.ZoomLevel));
 
                 _MapItemSets[_CurrentMapItemSet].UpdateVisibilty(_Map.BoundingRectangle, zoomLevel);
             }

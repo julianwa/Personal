@@ -34,13 +34,13 @@ namespace MapItemClustering
         public int MinZoomLevel
         {
             get;
-            private set;
+            internal set;
         }
 
         public int MaxZoomLevel
         {
             get;
-            private set;
+            internal set;
         }
 
         public object Tag
@@ -77,7 +77,6 @@ namespace MapItemClustering
 
     public class FixedSizeMapItem : MapItem
     {
-        private Size _SizeInPixels;
         private Point _LocationNormalizedMercator;
 
         public FixedSizeMapItem(Location location,
@@ -88,7 +87,7 @@ namespace MapItemClustering
             : base(location, minZoomLevel, maxZoomLevel)
         {
             PositionOrigin = positionOrigin;
-            _SizeInPixels = sizeInPixels;
+            SizeInPixels = sizeInPixels;
             _LocationNormalizedMercator = location.ToNormalizedMercator();
         }
 
@@ -98,12 +97,18 @@ namespace MapItemClustering
             private set;
         }
 
+        public Size SizeInPixels
+        {
+            get;
+            private set;
+        }
+
         public override NormalizedMercatorRect BoundingRectAtZoomLevel(double zoomLevel)
         {
             double mapWidthInPixelsAtZoomLevel = 256 * Math.Pow(2, zoomLevel);
 
-            double width = _SizeInPixels.Width / mapWidthInPixelsAtZoomLevel;
-            double height = _SizeInPixels.Height / mapWidthInPixelsAtZoomLevel;
+            double width = SizeInPixels.Width / mapWidthInPixelsAtZoomLevel;
+            double height = SizeInPixels.Height / mapWidthInPixelsAtZoomLevel;
 
             Point center = _LocationNormalizedMercator;
 
