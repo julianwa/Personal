@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Shapes;
 using MapItemClustering;
 using Microsoft.Maps.MapControl;
 
@@ -14,8 +15,9 @@ namespace MapItemClusteringTestApp
     {
         private Random _Rnd = new Random(0);
 
+        private Stack<FrameworkElement> _PushpinPool;
+
         private int _CurrentMapItemSet;
-        private List<MapItem> _MapItems;
         private List<MapItemSet> _MapItemSets;
 
         private bool _VisibilityUpdatePaused;
@@ -24,9 +26,17 @@ namespace MapItemClusteringTestApp
         {
             InitializeComponent();
 
-            _MapItems = new List<MapItem>();
+            KeyDown += new KeyEventHandler(MainPage_KeyDown);
+
+            _PushpinPool = new Stack<FrameworkElement>();
 
             _CurrentMapItemSet = 0;
+
+            BuildMapItemSets();
+        }
+
+        private void BuildMapItemSets()
+        {
             _MapItemSets = new List<MapItemSet>
             {                
                 new QuadTreeMapItemSet(),
@@ -35,31 +45,24 @@ namespace MapItemClusteringTestApp
 
             List<MapItem> mapItems = new List<MapItem>();
 
-            for (int i = 0; i < 1000; i++)
+            for (int i = 0; i < 10000; i++)
             {
-                AddMapItem(mapItems, 0, 18);
+                Location location = new Location(
+                _Rnd.NextDouble() * 2 * MapMath.MercatorLatitudeLimit - MapMath.MercatorLatitudeLimit,
+                _Rnd.NextDouble() * 10000 - 5000);
+
+                MapItem item = new FixedSizeMapItem(location, PositionOrigin.Center, new Size(20, 20), 0, 18);
+
+                mapItems.Add(item);
             }
 
-            _MapItems = new List<MapItem>(Clusterer.Cluster(mapItems));
+            mapItems = new List<MapItem>(Clusterer.Cluster(mapItems));
 
-            foreach (MapItem item in _MapItems)
+            foreach (MapItem item in mapItems)
             {
                 item.InViewChanged += new EventHandler(item_InViewChanged);
                 _MapItemSets.ForEach((set) => set.Add(item));
             }
-
-            KeyDown += new KeyEventHandler(MainPage_KeyDown);
-        }
-
-        private void AddMapItem(List<MapItem> mapItems, int minZoomLevel, int maxZoomLevel)
-        {
-            Location location = new Location(
-                _Rnd.NextDouble() * 2 * MapMath.MercatorLatitudeLimit - MapMath.MercatorLatitudeLimit,
-                _Rnd.NextDouble() * 10000 - 5000);
-
-            MapItem item = new FixedSizeMapItem(location, PositionOrigin.Center, new Size(20, 20), minZoomLevel, maxZoomLevel);
-
-            mapItems.Add(item);
         }
 
         private void MainPage_KeyDown(object sender, KeyEventArgs e)
@@ -98,6 +101,8 @@ namespace MapItemClusteringTestApp
 
                 _CurrentMapItemSet = (_CurrentMapItemSet + 1) % _MapItemSets.Count;
 
+                _PushpinPool.Clear();
+
                 UpdateVisibility();
             }
             else if (e.Key >= Key.D0 && e.Key <= Key.D9)
@@ -112,16 +117,25 @@ namespace MapItemClusteringTestApp
 
             if (item.InView)
             {
-                Pushpin pushpin = new Pushpin()
-                {
-                    Location = item.Location,
-                    Background = new SolidColorBrush(_CurrentMapItemSet % 2 == 0 ? Colors.Purple : Colors.Gray),
-                    Tag = item,
-                    Style = (Style)Resources["StoryPin"]
-                };
-                Canvas.SetZIndex(pushpin, _MapItems.IndexOf(item));
+                FrameworkElement pushpin;
 
-                pushpin.MouseRightButtonDown += new MouseButtonEventHandler(pushpin_MouseRightButtonDown);
+                if (_PushpinPool.Count == 0)
+                {
+                    pushpin = new Ellipse()
+                    {
+                        Fill = new SolidColorBrush(_CurrentMapItemSet % 2 == 0 ? Colors.Purple : Colors.Gray),
+                        Width = 20,
+                        Height = 20
+                    };
+                    pushpin.MouseRightButtonDown += new MouseButtonEventHandler(pushpin_MouseRightButtonDown);
+                }
+                else
+                {
+                    pushpin = _PushpinPool.Pop();
+                }
+
+                MapLayer.SetPositionOrigin(pushpin, PositionOrigin.Center);
+                MapLayer.SetPosition(pushpin, item.Location);
 
                 item.Tag = pushpin;
 
@@ -129,10 +143,11 @@ namespace MapItemClusteringTestApp
             }
             else
             {
-                Pushpin pushpin = (Pushpin)item.Tag;
+                FrameworkElement pushpin = (FrameworkElement)item.Tag;
                 pushpin.Tag = null;
                 item.Tag = null;
                 _PushPinLayer.Children.Remove(pushpin);
+                _PushpinPool.Push(pushpin);
             }
         }
 
