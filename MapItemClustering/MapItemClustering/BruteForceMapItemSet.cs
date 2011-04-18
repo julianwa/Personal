@@ -5,23 +5,36 @@ namespace MapItemClustering
 {
     public class BruteForceMapItemSet : MapItemSet
     {
-        private HashSet<MapItem> _MapItems;
+        private HashSet<MapItem> _Items;
 
         public BruteForceMapItemSet()
         {
-            _MapItems = new HashSet<MapItem>();
+            _Items = new HashSet<MapItem>();
         }
 
-        public override void Add(MapItem mapItem)
+        public override void Add(MapItem item)
         {
-            _MapItems.Add(mapItem);
+            _Items.Add(item);
+        }
+
+        /// <summary>
+        /// Removes the given element from the set.
+        /// </summary>
+        /// <param name="item">The item to remove.</param>
+        /// <returns>
+        /// true if the element is successfully found and removed; otherwise, false.
+        /// </returns>
+        public override bool Remove(MapItem item)
+        {
+            item.InView = false;
+            return _Items.Remove(item);
         }
 
         public override void ClearVisibility()
         {
-            foreach (MapItem mapItem in _MapItems)
+            foreach (MapItem item in _Items)
             {
-                mapItem.InView = false;
+                item.InView = false;
             }
         }
 
@@ -36,13 +49,13 @@ namespace MapItemClustering
         {
             NormalizedMercatorRect queryRect = new NormalizedMercatorRect(locationRect);
 
-            foreach (MapItem mapItem in _MapItems)
+            foreach (MapItem item in _Items)
             {
                 bool inView = false;
 
-                if (zoomLevel <= mapItem.MaxZoomLevel && zoomLevel >= mapItem.MinZoomLevel)
+                if (zoomLevel <= item.MaxZoomLevel && zoomLevel >= item.MinZoomLevel)
                 {
-                    NormalizedMercatorRect itemRect = mapItem.BoundingRectAtZoomLevel(zoomLevel);
+                    NormalizedMercatorRect itemRect = item.BoundingRectAtZoomLevel(zoomLevel);
 
                     if (queryRect.Intersects(itemRect))
                     {
@@ -50,7 +63,7 @@ namespace MapItemClustering
                     }
                 }
 
-                mapItem.InView = inView;
+                item.InView = inView;
             }
         }
     }

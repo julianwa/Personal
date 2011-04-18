@@ -79,6 +79,11 @@ namespace MapItemClustering
             _Items.Add(item);
         }
 
+        public bool RemoveMapItem(MapItem item)
+        {
+            return _Items.Remove(item);
+        }
+
         public IEnumerable<MapItem> Items
         {
             get { return _Items; }

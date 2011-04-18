@@ -6,7 +6,14 @@ namespace MapItemClustering
 {
     public abstract class MapItemSet
     {
-        public abstract void Add(MapItem mapItem);
+        public abstract void Add(MapItem item);
+
+        /// <summary>
+        /// Removes the given element from the set.
+        /// </summary>
+        /// <param name="item">The item to remove.</param>
+        /// <returns>true if the element is successfully found and removed; otherwise, false.</returns>
+        public abstract bool Remove(MapItem item);
 
         public abstract void ClearVisibility();
 

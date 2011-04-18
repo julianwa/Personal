@@ -27,9 +27,21 @@ namespace MapItemClustering
             _VisibleItems.Clear();
         }
 
-        public override void Add(MapItem mapItem)
+        public override void Add(MapItem item)
         {
-            _Items.Add(mapItem);
+            _Items.Add(item);
+        }
+
+        /// <summary>
+        /// Removes the given element from the set.
+        /// </summary>
+        /// <param name="item">The item to remove.</param>
+        /// <returns>true if the element is successfully found and removed; otherwise, false.</returns>
+        public override bool Remove(MapItem item)
+        {
+            item.InView = false;
+            _VisibleItems.Remove(item);
+            return _Items.Remove(item);
         }
 
         public override void UpdateVisibilty(LocationRect locationRect, int zoomLevel)

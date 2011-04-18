@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -32,30 +33,33 @@ namespace MapItemClusteringTestApp
                 new QuadTreeMapItemSet()
             };
 
-            for (int maxZoomLevel = 2; maxZoomLevel < 12; maxZoomLevel++)
+            //for (int maxZoomLevel = 2; maxZoomLevel < 12; maxZoomLevel++)
+            //{
+            //    for (int numPushpins = 0; numPushpins < 10 * (1 << maxZoomLevel); numPushpins++)
+            //    {
+            //        AddMapItem(maxZoomLevel);
+            //    }
+            //}
+
+            for (int i = 0; i < 100; i++)
             {
-                for (int numPushpins = 0; numPushpins < 10 * (1 << maxZoomLevel); numPushpins++)
-                {
-                    AddMapItem(maxZoomLevel);
-                }
+                AddMapItem(0, 18);
             }
 
             KeyDown += new KeyEventHandler(MainPage_KeyDown);
         }
 
-        private void AddMapItem(int maxZoomLevel)
+        private void AddMapItem(int minZoomLevel, int maxZoomLevel)
         {
-            int minZoomLevel = maxZoomLevel;
-
             Location location = new Location(
                 _Rnd.NextDouble() * 2 * MapMath.MercatorLatitudeLimit - MapMath.MercatorLatitudeLimit,
                 _Rnd.NextDouble() * 10000 - 5000);
 
-            MapItem mapItem = new FixedSizeMapItem(location, PositionOrigin.BottomCenter, new Size(35, 41), minZoomLevel, maxZoomLevel);
-            mapItem.InViewChanged += new EventHandler(mapItem_InViewChanged);
+            MapItem item = new FixedSizeMapItem(location, PositionOrigin.BottomCenter, new Size(35, 41), minZoomLevel, maxZoomLevel);
+            item.InViewChanged += new EventHandler(item_InViewChanged);
 
-            _MapItems.Add(mapItem);
-            _MapItemSets.ForEach((set) => set.Add(mapItem));
+            _MapItems.Add(item);
+            _MapItemSets.ForEach((set) => set.Add(item));
         }
 
         private void MainPage_KeyDown(object sender, KeyEventArgs e)
@@ -98,27 +102,47 @@ namespace MapItemClusteringTestApp
             }
         }
 
-        void mapItem_InViewChanged(object sender, EventArgs e)
+        void item_InViewChanged(object sender, EventArgs e)
         {
-            MapItem mapItem = (MapItem)sender;
+            MapItem item = (MapItem)sender;
 
-            if (mapItem.InView)
+            if (item.InView)
             {
                 Pushpin pushpin = new Pushpin()
                 {
-                    Location = mapItem.Location,
+                    Location = item.Location,
                     Background = new SolidColorBrush(_CurrentMapItemSet % 2 == 0 ? Colors.Gray : Colors.Purple),
+                    Tag = item
                 };
-                Canvas.SetZIndex(pushpin, _MapItems.IndexOf(mapItem));
+                Canvas.SetZIndex(pushpin, _MapItems.IndexOf(item));
 
-                mapItem.Tag = pushpin;
+                pushpin.MouseRightButtonDown += new MouseButtonEventHandler(pushpin_MouseRightButtonDown);
+
+                item.Tag = pushpin;
 
                 _PushPinLayer.Children.Add(pushpin);
             }
             else
             {
-                _PushPinLayer.Children.Remove((Pushpin)mapItem.Tag);
+                Pushpin pushpin = (Pushpin)item.Tag;
+                pushpin.Tag = null;
+                item.Tag = null;
+                _PushPinLayer.Children.Remove(pushpin);
             }
+        }
+
+        private void pushpin_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            var pushpin = (Pushpin)sender;
+            var item = (MapItem)pushpin.Tag;
+
+            _MapItemSets.ForEach((set) =>
+            {
+                bool removed = set.Remove(item);
+                Debug.Assert(removed);
+            });
+
+            e.Handled = true;
         }
 
         private void _Map_ViewChangeOnFrame(object sender, MapEventArgs e)

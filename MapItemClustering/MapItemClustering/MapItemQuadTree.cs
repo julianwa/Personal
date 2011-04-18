@@ -50,6 +50,48 @@ namespace MapItemClustering
         }
 
         /// <summary>
+        /// Removes the given element from the tree.
+        /// </summary>
+        /// <param name="item">The item to remove.</param>
+        /// <returns>true if the element is successfully found and removed; otherwise, false.</returns>
+        public bool Remove(MapItem item)
+        {
+            Debug.Assert(_NodesToVisit.Count == 0);
+
+            _NodesToVisit.Push(_RootNode);
+
+            bool foundItem = false;
+
+            while (_NodesToVisit.Count > 0)
+            {
+                MapItemQuadTreeNode node = _NodesToVisit.Pop();
+                Debug.Assert(node.ZoomLevel <= item.MaxZoomLevel);
+                Debug.Assert(item.BoundingRectAtZoomLevel(node.ZoomLevel).Intersects(node.Rect));
+
+                if (node.ZoomLevel >= item.MinZoomLevel && node.ZoomLevel <= item.MaxZoomLevel)
+                {
+                    foundItem |= node.RemoveMapItem(item);
+                }
+
+                if (node.ZoomLevel < item.MaxZoomLevel)
+                {
+                    for (int childIdx = 0; childIdx < 4; childIdx++)
+                    {
+                        NormalizedMercatorRect itemRect = item.BoundingRectAtZoomLevel(node.ZoomLevel + 1);
+
+                        MapItemQuadTreeNode child = node.GetChild(childIdx);
+                        if (child != null && itemRect.Intersects(child.Rect))
+                        {
+                            _NodesToVisit.Push(node.EnsureChild(childIdx));
+                        }
+                    }
+                }
+            }
+
+            return foundItem;
+        }
+
+        /// <summary>
         /// Returns all of the items that intersect the given rect at the given zoom level. This list
         /// may contain duplicate items.
         /// </summary>
