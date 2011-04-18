@@ -137,6 +137,7 @@ namespace MapItemClusteringTestApp
                 MapLayer.SetPositionOrigin(pushpin, PositionOrigin.Center);
                 MapLayer.SetPosition(pushpin, item.Location);
 
+                pushpin.Tag = item;
                 item.Tag = pushpin;
 
                 _PushPinLayer.Children.Add(pushpin);
@@ -153,7 +154,7 @@ namespace MapItemClusteringTestApp
 
         private void pushpin_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
-            var pushpin = (Pushpin)sender;
+            var pushpin = (FrameworkElement)sender;
             var item = (MapItem)pushpin.Tag;
 
             _MapItemSets.ForEach((set) =>
