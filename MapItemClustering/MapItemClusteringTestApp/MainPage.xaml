@@ -22,8 +22,8 @@
             <map:Map.Mode>
                 <map:AerialMode Labels="False" />
             </map:Map.Mode>
-            <map:MapLayer x:Name="_ViewportRectLayer" />
-            <map:MapLayer x:Name="_PushPinLayer" />
+            <map:MapLayer x:Name="_ViewportRectLayer" UseLayoutRounding="False" />
+            <map:MapLayer x:Name="_PushPinLayer" UseLayoutRounding="False" />
         </map:Map>
 
     </Grid>
