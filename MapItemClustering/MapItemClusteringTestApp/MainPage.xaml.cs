@@ -1,17 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Shapes;
-using System.Diagnostics;
-using Microsoft.Maps.MapControl;
 using MapItemClustering;
+using Microsoft.Maps.MapControl;
 
 namespace MapItemClusteringTestApp
 {
@@ -19,7 +13,9 @@ namespace MapItemClusteringTestApp
     {
         private Random _Rnd = new Random(0);
 
-        private MapItemSet _MapItemSet;
+        private int _CurrentMapItemSet;
+        private List<MapItem> _MapItems;
+        private List<MapItemSet> _MapItemSets;
 
         private bool _VisibilityUpdatePaused;
 
@@ -27,9 +23,16 @@ namespace MapItemClusteringTestApp
         {
             InitializeComponent();
 
-            _MapItemSet = new MapItemSet();
+            _MapItems = new List<MapItem>();
 
-            for (int maxZoomLevel = 2; maxZoomLevel < 16; maxZoomLevel++)
+            _CurrentMapItemSet = 0;
+            _MapItemSets = new List<MapItemSet>
+            {
+                new BruteForceMapItemSet(),
+                new QuadTreeMapItemSet()
+            };
+
+            for (int maxZoomLevel = 2; maxZoomLevel < 12; maxZoomLevel++)
             {
                 for (int numPushpins = 0; numPushpins < 10 * (1 << maxZoomLevel); numPushpins++)
                 {
@@ -51,7 +54,8 @@ namespace MapItemClusteringTestApp
             MapItem mapItem = new FixedSizeMapItem(location, PositionOrigin.BottomCenter, new Size(35, 41), minZoomLevel, maxZoomLevel);
             mapItem.InViewChanged += new EventHandler(mapItem_InViewChanged);
 
-            _MapItemSet.Add(mapItem);
+            _MapItems.Add(mapItem);
+            _MapItemSets.ForEach((set) => set.Add(mapItem));
         }
 
         private void MainPage_KeyDown(object sender, KeyEventArgs e)
@@ -81,6 +85,17 @@ namespace MapItemClusteringTestApp
                     _ViewportRectLayer.Children.Clear();
                 }
             }
+            else if (e.Key == Key.S)
+            {
+                _MapItemSets.ForEach((set) =>
+                {
+                    set.ClearVisibility();
+                });
+
+                _CurrentMapItemSet = (_CurrentMapItemSet + 1) % _MapItemSets.Count;
+
+                UpdateVisibility();
+            }
         }
 
         void mapItem_InViewChanged(object sender, EventArgs e)
@@ -92,8 +107,9 @@ namespace MapItemClusteringTestApp
                 Pushpin pushpin = new Pushpin()
                 {
                     Location = mapItem.Location,
-                    Background = new SolidColorBrush(Colors.Gray)
+                    Background = new SolidColorBrush(_CurrentMapItemSet % 2 == 0 ? Colors.Gray : Colors.Purple),
                 };
+                Canvas.SetZIndex(pushpin, _MapItems.IndexOf(mapItem));
 
                 mapItem.Tag = pushpin;
 
@@ -107,9 +123,20 @@ namespace MapItemClusteringTestApp
 
         private void _Map_ViewChangeOnFrame(object sender, MapEventArgs e)
         {
+            UpdateVisibility();
+        }
+
+        private void UpdateVisibility()
+        {
             if (!_VisibilityUpdatePaused)
             {
-                _MapItemSet.UpdateVisibilty(_Map.BoundingRectangle, _Map.ZoomLevel);
+                // If we're very close to a discrete zoom level, then choose that discrete zoom level. 
+                // Otherwise, choose the ceiling of the zoom level.
+                int zoomLevel = (int)(Math.Abs(_Map.ZoomLevel - Math.Round(_Map.ZoomLevel)) < 1e-4 ?
+                    Math.Round(_Map.ZoomLevel) :
+                    Math.Ceiling(_Map.ZoomLevel));
+
+                _MapItemSets[_CurrentMapItemSet].UpdateVisibilty(_Map.BoundingRectangle, zoomLevel);
             }
         }
     }

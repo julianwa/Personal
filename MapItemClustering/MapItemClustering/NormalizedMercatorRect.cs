@@ -7,7 +7,7 @@ namespace MapItemClustering
 {
     public class NormalizedMercatorRect
     {
-        public Rect[] _Rects;
+        private Rect[] _Rects;
 
         public NormalizedMercatorRect(LocationRect locationRect)
         {
@@ -47,13 +47,23 @@ namespace MapItemClustering
             {
                 for (int j = 0; j < other._Rects.Length; j++)
                 {
-                    Rect r = _Rects[i];
-                    r.Intersect(other._Rects[j]);
-
-                    if (!r.IsEmpty)
+                    if (_Rects[i].Intersects(other._Rects[j]))
                     {
                         return true;
                     }
+                }
+            }
+
+            return false;
+        }
+
+        public bool Intersects(Rect other)
+        {
+            for (int i = 0; i < _Rects.Length; i++)
+            {
+                if (_Rects[i].Intersects(other))
+                {
+                    return true;
                 }
             }
 

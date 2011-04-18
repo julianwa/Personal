@@ -5,7 +5,7 @@ using Microsoft.Maps.MapControl;
 
 namespace MapItemClustering
 {
-    public static class LocationExtensions
+    public static class ExtensionMethods
     {
         /// <summary>
         /// Converts the Location to normalized mercator, where latitude [-180,+180] and 
@@ -48,6 +48,16 @@ namespace MapItemClustering
             Debug.Assert(MapMath.WithinEpsilon(y, MapMath.Clamp(y, 0, 1)));
 
             return new Point(MapMath.Clamp(x, 0, 1), MapMath.Clamp(y, 0, 1));
+        }
+
+
+        /// <summary>
+        /// Returns whether this Rect intersects the other.
+        /// </summary>
+        public static bool Intersects(this Rect rect, Rect other)
+        {
+            other.Intersect(rect);
+            return !other.IsEmpty;
         }
     }
 }

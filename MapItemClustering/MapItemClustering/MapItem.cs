@@ -6,10 +6,20 @@ namespace MapItemClustering
 {
     public abstract class MapItem
     {
-        bool _InView;
+        private bool _InView;
 
         public MapItem(Location location, int minZoomLevel, int maxZoomLevel)
         {
+            if (minZoomLevel < 0 || maxZoomLevel < 0)
+            {
+                throw new ArgumentException("zoom levels must be non-negative");
+            }
+
+            if (minZoomLevel > maxZoomLevel)
+            {
+                throw new ArgumentException("max zoom level must be greater than or equal to min zoom level");
+            }
+
             Location = location;
             MinZoomLevel = minZoomLevel;
             MaxZoomLevel = maxZoomLevel;

@@ -58,12 +58,16 @@
     <Reference Include="System.Windows.Browser" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="LocationExtensions.cs" />
+    <Compile Include="BruteForceMapItemSet.cs" />
+    <Compile Include="ExtensionMethods.cs" />
     <Compile Include="MapItem.cs" />
+    <Compile Include="MapItemQuadTree.cs" />
+    <Compile Include="MapItemQuadTreeNode.cs" />
     <Compile Include="MapItemSet.cs" />
     <Compile Include="MapMath.cs" />
     <Compile Include="NormalizedMercatorRect.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="QuadTreeMapItemSet.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" />
   <ProjectExtensions>
