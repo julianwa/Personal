@@ -109,6 +109,17 @@ namespace MapItemClusteringTestApp
             {
                 _Map.ZoomLevel = (int)e.Key - (int)Key.D0;
             }
+            else if (e.Key == Key.B)
+            {
+                if ((Keyboard.Modifiers & ModifierKeys.Shift) == 0)
+                {
+                    _LodBiasSlider.DiscreteValue += 1;
+                }
+                else
+                {
+                    _LodBiasSlider.DiscreteValue -= 1;
+                }
+            }
         }
 
         void item_InViewChanged(object sender, EventArgs e)
@@ -181,8 +192,13 @@ namespace MapItemClusteringTestApp
                     Math.Round(_Map.ZoomLevel) :
                     Math.Floor(_Map.ZoomLevel));
 
-                _MapItemSets[_CurrentMapItemSet].UpdateVisibilty(_Map.BoundingRectangle, zoomLevel);
+                _MapItemSets[_CurrentMapItemSet].UpdateVisibilty(_Map.BoundingRectangle, zoomLevel + _LodBiasSlider.DiscreteValue);
             }
+        }
+
+        private void LodBiasSlider_DiscreteValueChanged(object sender, EventArgs e)
+        {
+            UpdateVisibility();
         }
     }
 }

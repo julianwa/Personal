@@ -5,6 +5,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:map="clr-namespace:Microsoft.Maps.MapControl;assembly=Microsoft.Maps.MapControl"
     xmlns:mapcore="clr-namespace:Microsoft.Maps.MapControl.Core;assembly=Microsoft.Maps.MapControl"
+    xmlns:ta="clr-namespace:MapItemClusteringTestApp"
     mc:Ignorable="d"
     d:DesignHeight="300" d:DesignWidth="400">
 
@@ -26,5 +27,16 @@
             <map:MapLayer x:Name="_PushPinLayer" UseLayoutRounding="False" />
         </map:Map>
 
+        <Border Background="#CCFFFFFF" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="20" CornerRadius="10">
+
+            <StackPanel Margin="10">
+                <TextBlock Text="LOD bias:" />
+                <StackPanel Orientation="Horizontal">                
+                    <ta:DiscreteSlider x:Name="_LodBiasSlider" Width="200" Minimum="-5" Maximum="5" SmallChange="1" DiscreteValueChanged="LodBiasSlider_DiscreteValueChanged"/>
+                    <TextBlock VerticalAlignment="Center" Text="{Binding ElementName=_LodBiasSlider, Path=DiscreteValue}" TextAlignment="Right" Width="20" />
+                </StackPanel>
+            </StackPanel>
+        </Border>
+        
     </Grid>
 </UserControl>
