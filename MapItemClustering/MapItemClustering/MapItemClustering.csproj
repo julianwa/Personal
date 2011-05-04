@@ -61,6 +61,7 @@
     <Compile Include="BruteForceMapItemSet.cs" />
     <Compile Include="Clusterer.cs" />
     <Compile Include="ExtensionMethods.cs" />
+    <Compile Include="FixedSizeInScreenSpaceMapItem.cs" />
     <Compile Include="MapItem.cs" />
     <Compile Include="MapItemQuadTree.cs" />
     <Compile Include="MapItemQuadTreeNode.cs" />

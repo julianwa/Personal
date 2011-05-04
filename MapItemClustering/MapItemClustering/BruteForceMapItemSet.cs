@@ -3,20 +3,28 @@ using Microsoft.Maps.MapControl;
 
 namespace MapItemClustering
 {
+    /// <summary>
+    /// A map item set implemented using brute force methods for determing map item visibility.
+    /// </summary>
     public class BruteForceMapItemSet : MapItemSet
     {
         private HashSet<MapItem> _Items;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BruteForceMapItemSet"/> class.
+        /// </summary>
         public BruteForceMapItemSet()
         {
             _Items = new HashSet<MapItem>();
         }
 
         /// <summary>
-        /// Adds the specified item to the set.
+        /// Adds the specified map item to the set.
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>true if the element is added to the set; false if the element is already present.</returns>
+        /// <param name="item">The map item.</param>
+        /// <returns>
+        /// True if the element is added to the set; false if the element is already present.
+        /// </returns>
         public override bool Add(MapItem item)
         {
             if (!_Items.Contains(item))
@@ -29,11 +37,11 @@ namespace MapItemClustering
         }
 
         /// <summary>
-        /// Removes the given element from the set.
+        /// Removes the given map item from the set.
         /// </summary>
-        /// <param name="item">The item to remove.</param>
+        /// <param name="item">The map item to remove.</param>
         /// <returns>
-        /// true if the element is successfully found and removed; otherwise, false.
+        /// True if the element is successfully found and removed; otherwise, false.
         /// </returns>
         public override bool Remove(MapItem item)
         {
@@ -41,40 +49,44 @@ namespace MapItemClustering
             return _Items.Remove(item);
         }
 
-        public override void ClearVisibility()
-        {
-            foreach (MapItem item in _Items)
-            {
-                item.InView = false;
-            }
-        }
-
         /// <summary>
-        /// Returns an enumerator over all of the map items that are visible in the given rectangle
-        /// and zoom level.
+        /// Updates each map item in the set, setting whether it's in the view specified by the given
+        /// location rect and zoom level.
         /// </summary>
-        /// <param name="rect">The rect used for the query.</param>
-        /// <param name="zoomLevel">The zoom level used for the query.</param>
-        /// <returns></returns>
+        /// <param name="locationRect">The location rect component of the view.</param>
+        /// <param name="zoomLevel">The zoom level component of the view.</param>
         public override void UpdateVisibilty(LocationRect locationRect, int zoomLevel)
         {
-            NormalizedMercatorRect queryRect = new NormalizedMercatorRect(locationRect);
-
-            foreach (MapItem item in _Items)
+            // If the location rect has no area...
+            if (locationRect.Width <= 0 || locationRect.Height <= 0)
             {
-                bool inView = false;
-
-                if (zoomLevel <= item.MaxZoomLevel && zoomLevel >= item.MinZoomLevel)
+                // ...then clear the visibility on each map item.
+                foreach (MapItem item in _Items)
                 {
-                    NormalizedMercatorRect itemRect = item.BoundingRectAtZoomLevel(zoomLevel);
-
-                    if (queryRect.Intersects(itemRect))
-                    {
-                        inView = true;
-                    }
+                    item.InView = false;
                 }
+            }
+            else
+            {
+                // ...otherwise, do the normal visibility update.
+                NormalizedMercatorRect queryRect = new NormalizedMercatorRect(locationRect);
 
-                item.InView = inView;
+                foreach (MapItem item in _Items)
+                {
+                    bool inView = false;
+
+                    if (zoomLevel <= item.MaxZoomLevel && zoomLevel >= item.MinZoomLevel)
+                    {
+                        NormalizedMercatorRect itemRect = item.BoundingRectAtZoomLevel(zoomLevel);
+
+                        if (queryRect.Intersects(itemRect))
+                        {
+                            inView = true;
+                        }
+                    }
+
+                    item.InView = inView;
+                }
             }
         }
     }

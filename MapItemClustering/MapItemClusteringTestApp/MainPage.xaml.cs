@@ -51,7 +51,7 @@ namespace MapItemClusteringTestApp
                 _Rnd.NextDouble() * 2 * MapMath.MercatorLatitudeLimit - MapMath.MercatorLatitudeLimit,
                 _Rnd.NextDouble() * 10000 - 5000);
 
-                MapItem item = new FixedSizeMapItem(location, PositionOrigin.Center, new Size(20, 20), 0, 18);
+                MapItem item = new FixedSizeInScreenSpaceMapItem(location, PositionOrigin.Center, new Size(20, 20), 0, 18);
 
                 mapItems.Add(item);
             }
@@ -96,7 +96,8 @@ namespace MapItemClusteringTestApp
             {
                 _MapItemSets.ForEach((set) =>
                 {
-                    set.ClearVisibility();
+                    // Marks all items to be out of view.
+                    set.UpdateVisibilty(new LocationRect(), 0);
                 });
 
                 _CurrentMapItemSet = (_CurrentMapItemSet + 1) % _MapItemSets.Count;

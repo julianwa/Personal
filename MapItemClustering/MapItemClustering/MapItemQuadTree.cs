@@ -146,7 +146,7 @@ namespace MapItemClustering
         {
             if (zoomLevel < 0)
             {
-                throw new ArgumentException("zoom level must be positive");
+                throw new ArgumentException("zoom level must be non-negative");
             }
 
             if (!rect.Intersects(_RootNode.Rect))

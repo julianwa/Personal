@@ -95,7 +95,7 @@ namespace MapItemClustering
 
                     if (item.MaxZoomLevel > node.ZoomLevel)
                     {
-                        tree.Add(new FixedSizeMapItem(
+                        tree.Add(new FixedSizeInScreenSpaceMapItem(
                             item.Location,
                             PositionOrigin.Center,
                             new Size(20, 20),
@@ -106,7 +106,7 @@ namespace MapItemClustering
 
                 Point clusterCenterOfMass = new Point(sumX / cluster.Count, sumY / cluster.Count);
 
-                tree.Add(new FixedSizeMapItem(
+                tree.Add(new FixedSizeInScreenSpaceMapItem(
                     clusterCenterOfMass.ToLocation(),
                     PositionOrigin.Center,
                     new Size(20, 20),

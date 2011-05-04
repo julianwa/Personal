@@ -71,5 +71,15 @@ namespace MapItemClustering
             other.Intersect(rect);
             return !other.IsEmpty;
         }
+
+        /// <summary>
+        /// Returns whether this Rect contains the other.
+        /// </summary>
+        public static bool Contains(this Rect rect, Rect other)
+        {
+            Rect ix = other;
+            ix.Intersect(rect);
+            return ix == other;
+        }
     }
 }

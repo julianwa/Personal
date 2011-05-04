@@ -5,15 +5,32 @@ using Microsoft.Maps.MapControl;
 
 namespace MapItemClustering
 {
+    /// <summary>
+    /// A rectangle in normalized mercator coordinates, where longitude [-180,+180] and 
+    /// latitude [MercatorLatitudeLimit, -MercatorLatitudeLimit] both map to [0,1].
+    /// </summary>
     public class NormalizedMercatorRect
     {
         private Rect[] _Rects;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NormalizedMercatorRect"/> class.
+        /// </summary>
+        /// <param name="rect">The a normal rectangle in normalized mercator coordinates.</param>
         public NormalizedMercatorRect(Rect rect)
         {
+            if (!new Rect(0, 0, 1, 1).Contains(rect))
+            {
+                throw new ArgumentException("rect");
+            }
+
             _Rects = new Rect[] { rect };
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NormalizedMercatorRect"/> class.
+        /// </summary>
+        /// <param name="locationRect">The location rect.</param>
         public NormalizedMercatorRect(LocationRect locationRect)
         {
             Point nw = locationRect.Northwest.ToNormalizedMercator();
@@ -22,6 +39,12 @@ namespace MapItemClustering
             InitRects(nw, se);
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NormalizedMercatorRect"/> class.
+        /// </summary>
+        /// <param name="center">The center in normalized mercator.</param>
+        /// <param name="width">The width in normalized mercator.</param>
+        /// <param name="height">The height in normalized mercator.</param>
         public NormalizedMercatorRect(Point center, double width, double height)
         {
             if (width <= 0 || height <= 0)
@@ -46,6 +69,11 @@ namespace MapItemClustering
             InitRects(nw, se);
         }
 
+        /// <summary>
+        /// Returns whether the two rectangle intersect.
+        /// </summary>
+        /// <param name="other">The other rect.</param>
+        /// <returns></returns>
         public bool Intersects(NormalizedMercatorRect other)
         {
             for (int i = 0; i < _Rects.Length; i++)
@@ -62,6 +90,11 @@ namespace MapItemClustering
             return false;
         }
 
+        /// <summary>
+        /// Returns whether the two rectangles intersect.
+        /// </summary>
+        /// <param name="other">The other rectangle, specified in normalized mercator coordinates.</param>
+        /// <returns></returns>
         public bool Intersects(Rect other)
         {
             for (int i = 0; i < _Rects.Length; i++)
