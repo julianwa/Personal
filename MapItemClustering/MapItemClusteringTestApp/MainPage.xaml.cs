@@ -48,8 +48,8 @@ namespace MapItemClusteringTestApp
             for (int i = 0; i < 10000; i++)
             {
                 Location location = new Location(
-                _Rnd.NextDouble() * 2 * MapMath.MercatorLatitudeLimit - MapMath.MercatorLatitudeLimit,
-                _Rnd.NextDouble() * 10000 - 5000);
+                    _Rnd.NextDouble() * 2 * MapMath.MercatorLatitudeLimit - MapMath.MercatorLatitudeLimit,
+                    _Rnd.NextDouble() * 10000 - 5000);
 
                 MapItem item = new FixedSizeInScreenSpaceMapItem(location, PositionOrigin.Center, new Size(20, 20), 0, 18);
 
@@ -90,6 +90,7 @@ namespace MapItemClusteringTestApp
                 else
                 {
                     _ViewportRectLayer.Children.Clear();
+                    UpdateVisibility();
                 }
             }
             else if (e.Key == Key.S)
@@ -134,19 +135,32 @@ namespace MapItemClusteringTestApp
             }
         }
 
+        private Color[] colors = new Color[] 
+        {
+            Colors.Red,
+            Colors.Blue,
+            Colors.Green,
+            Colors.Magenta,
+            Colors.Orange,
+            Colors.Yellow,
+            Colors.DarkGray,
+            Colors.Cyan,
+            Colors.Purple,
+            Colors.Brown
+        };
+
         private void item_InViewChanged(object sender, EventArgs e)
         {
             MapItem item = (MapItem)sender;
 
             if (item.InView)
             {
-                FrameworkElement pushpin;
+                Shape pushpin;
 
                 if (_PushpinPool.Count == 0)
                 {
                     pushpin = new Ellipse()
                     {
-                        Fill = new SolidColorBrush(_CurrentMapItemSet % 2 == 0 ? Colors.Purple : Colors.Gray),
                         Width = 20,
                         Height = 20
                     };
@@ -154,11 +168,14 @@ namespace MapItemClusteringTestApp
                 }
                 else
                 {
-                    pushpin = _PushpinPool.Pop();
+                    pushpin = (Shape)_PushpinPool.Pop();
                 }
 
                 MapLayer.SetPositionOrigin(pushpin, PositionOrigin.Center);
                 MapLayer.SetPosition(pushpin, item.Location);
+
+                int colorIdx = item.Parent != null ? item.Parent.GetHashCode() % colors.Length : 0;
+                pushpin.Fill = new SolidColorBrush(_CurrentMapItemSet % 2 == 0 ? colors[colorIdx] : Colors.Gray);
 
                 pushpin.Tag = item;
                 item.Tag = pushpin;
@@ -204,7 +221,7 @@ namespace MapItemClusteringTestApp
                     Math.Round(_Map.ZoomLevel) :
                     Math.Floor(_Map.ZoomLevel));
 
-                _MapItemSets[_CurrentMapItemSet].UpdateVisibilty(_Map.BoundingRectangle, zoomLevel + _LodBiasSlider.DiscreteValue);
+                _MapItemSets[_CurrentMapItemSet].UpdateVisibilty(_Map.BoundingRectangle, Math.Max(0, zoomLevel + _LodBiasSlider.DiscreteValue));
             }
         }
 

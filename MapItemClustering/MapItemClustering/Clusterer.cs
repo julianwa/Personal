@@ -1,20 +1,22 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Windows;
 using Microsoft.Maps.MapControl;
 using System;
-using System.Linq;
-using System.Diagnostics;
 
 namespace MapItemClustering
 {
     public class Clusterer
     {
+        private static Random _Random = new Random(0);
+
         /// <summary>
         /// Clusters the specified items.
         /// </summary>
         /// <param name="itemsToBeClustered">The items to be clustered.</param>
         /// <returns>The set of clustered map items.</returns>
-        static public IEnumerable<MapItem> Cluster(IEnumerable<MapItem> itemsToBeClustered)
+        public static IEnumerable<MapItem> Cluster(IEnumerable<MapItem> itemsToBeClustered)
         {
             // Add all of the items to a map item quad tree.
             MapItemQuadTree tree = new MapItemQuadTree();
@@ -81,49 +83,44 @@ namespace MapItemClustering
         }
 
         /// <summary>
-        /// Clusters the map items contained in the node. This operation modifies existing items in the
-        /// tree and adds new items that represent the clusters.
+        /// Clusters the map items contained in the node. Clustered items are modified and new items are added
+        /// to the tree to represent the clusters.
         /// </summary>
         private static void ClusterNodeItems(MapItemQuadTree tree, MapItemQuadTreeNode node)
         {
-            List<List<MapItem>> clusters = new List<List<MapItem>>();
+            var clumps = new List<List<MapItem>>();
+            var clusters = new List<Tuple<List<MapItem>, Point>>();
             HashSet<MapItem> visitedNodes = new HashSet<MapItem>();
 
             // Create the set of clusters of intersecting items.
             foreach (var item in node.Items)
             {
-                List<MapItem> cluster = new List<MapItem>();
+                List<MapItem> clump = new List<MapItem>();
 
-                GrowCluster(tree, item, node.ZoomLevel, visitedNodes, cluster);
+                GrowClump(tree, item, node.ZoomLevel, visitedNodes, clump);
 
-                if (cluster.Count > 1)
+                if (clump.Count > 1)
                 {
-                    foreach (var subCluster in PossiblySubdivideCluster(cluster, node.ZoomLevel))
+                    foreach (var cluster in ClusterClump(clump, node.ZoomLevel))
                     {
-                        clusters.Add(subCluster);
+                        if (cluster.Item1.Count > 1)
+                        {
+                            clusters.Add(cluster);
+                        }
                     }
                 }
             }
 
             // For each cluster, modify the existing items in the cluster such that they don't appear at the same
             // LOD as the cluster and add new item(s) to the tree that represent the cluster.
-            clusters.ForEach((cluster) =>
+            foreach (var cluster in clusters)
             {
-                Debug.Assert(cluster.Count > 1);
+                Debug.Assert(cluster.Item1.Count > 1);
 
-                double sumX = 0, sumY = 0;
-
-                cluster.ForEach((item) =>
-                {
-                    Point normalizedMercator = item.Location.ToNormalizedMercator();
-                    sumX += normalizedMercator.X;
-                    sumY += normalizedMercator.Y;
-                });
-
-                Point clusterCenterOfMass = new Point(sumX / cluster.Count, sumY / cluster.Count);
+                Point clusterLocation = cluster.Item2;
 
                 var clusterItem = new FixedSizeInScreenSpaceMapItem(
-                    clusterCenterOfMass.ToLocation(),
+                    clusterLocation.ToLocation(),
                     PositionOrigin.Center,
                     new Size(20, 20),
                     0,
@@ -131,7 +128,7 @@ namespace MapItemClustering
 
                 tree.Add(clusterItem);
 
-                cluster.ForEach((item) =>
+                foreach (var item in cluster.Item1)
                 {
                     tree.Remove(item);
 
@@ -154,54 +151,110 @@ namespace MapItemClustering
 
                         tree.Add(adjustedItem);
                     }
-                });
-            });
+                }
+            }
         }
 
         /// <summary>
-        /// Recursively adds all items that intersect the specified item to the cluster.
+        /// Recursively adds all items that intersect the specified item to the clump.
         /// </summary>        
-        private static void GrowCluster(MapItemQuadTree tree, MapItem item, int zoomLevel, HashSet<MapItem> visitedNodes, List<MapItem> cluster)
+        private static void GrowClump(MapItemQuadTree tree, MapItem item, int zoomLevel, HashSet<MapItem> visitedNodes, List<MapItem> clump)
         {
             if (visitedNodes.Add(item))
             {
-                cluster.Add(item);
+                clump.Add(item);
 
                 List<MapItem> intersectingItems = new List<MapItem>(tree.IntersectingItems(item.BoundingRectAtZoomLevel(zoomLevel), zoomLevel));
 
                 foreach (var intersectingItem in intersectingItems)
                 {
-                    GrowCluster(tree, intersectingItem, zoomLevel, visitedNodes, cluster);
+                    GrowClump(tree, intersectingItem, zoomLevel, visitedNodes, clump);
                 }
             }
         }
 
-        static private IEnumerable<List<MapItem>> PossiblySubdivideCluster(List<MapItem> cluster, int zoomLevel)
+        /// <summary>
+        /// A clump is a set of items that do not necessarily all intersect each other, but that is a connected component in 
+        /// the transitive closure of A intersects B applied to the set of all items. The idea is to break this clump into 
+        /// a set of clusters, each associated with a representative point in normalized mercator space.
+        /// </summary>
+        private static IEnumerable<Tuple<List<MapItem>, Point>> ClusterClump(List<MapItem> clump, int zoomLevel)
         {
-            const int TargetMaxItemsPerCluster = 20;
+            var clusters = new List<Tuple<List<MapItem>, Point>>();
 
-            int numClusters = (cluster.Count + TargetMaxItemsPerCluster - 1) / TargetMaxItemsPerCluster;
+            double spacing = 1.5 * ((FixedSizeInScreenSpaceMapItem)clump[0]).BoundingRectAtZoomLevel(zoomLevel).Width;
 
-            if (numClusters > 1)
+            var mapItemsRemaining = new List<MapItem>(clump);
+            mapItemsRemaining.Sort((left, right) =>
             {
-                var items = (from item in cluster
-                             select new KMeansClustering.Item()
-                                 {
-                                     Rect = item.BoundingRectAtZoomLevel(zoomLevel).AsRect(),
-                                     Tag = item
-                                 }).ToList();
+                Point leftCentroid = left.BoundingRectAtZoomLevel(zoomLevel).Centroid;
+                Point rightCentroid = right.BoundingRectAtZoomLevel(zoomLevel).Centroid;
 
-                var clusters = new List<List<MapItem>>();
-                foreach (var subCluster in KMeansClustering.ClusterItems(items, numClusters))
+                double leftDistSqr = (leftCentroid.X % spacing) * (leftCentroid.X % spacing) + (leftCentroid.Y % spacing) * (leftCentroid.Y % spacing);
+                double rightDistSqr = (rightCentroid.X % spacing) * (rightCentroid.X % spacing) + (rightCentroid.Y % spacing) * (rightCentroid.Y % spacing);
+
+                return Comparer<Double>.Default.Compare(leftDistSqr, rightDistSqr);
+            });
+
+            while (mapItemsRemaining.Count != 0)
+            {
+                MapItem item = mapItemsRemaining[mapItemsRemaining.Count - 1];
+
+                var itemBoundsAtNextCoarsestZoomLevel = item.BoundingRectAtZoomLevel(zoomLevel);
+
+                var clusterItems = (from ixItem in mapItemsRemaining
+                                    where ixItem.BoundingRectAtZoomLevel(zoomLevel).Intersects(itemBoundsAtNextCoarsestZoomLevel)
+                                    select ixItem).ToList();
+
+                foreach (var clusterItem in clusterItems)
                 {
-                    clusters.Add((from item in subCluster select (MapItem)item.Tag).ToList());
+                    mapItemsRemaining.Remove(clusterItem);
                 }
-                return clusters;
+
+                Debug.Assert(clusterItems.Contains(item), "Item should be included because it intersects itself.");
+
+                //MapItem representativeItem = SelectRepresentativeItem(clusterItems, zoomLevel);
+                MapItem representativeItem = item;
+
+                clusters.Add(Tuple.Create(clusterItems, representativeItem.BoundingRectAtZoomLevel(zoomLevel).Centroid));
             }
-            else
+
+            return clusters;        
+        }
+
+        private static MapItem SelectRepresentativeItem(List<MapItem> cluster, double zoomLevel)
+        {
+            double sumX = 0, sumY = 0;
+
+            for (int itemIdx = 0; itemIdx < cluster.Count; itemIdx++)
             {
-                return new List<MapItem>[] { cluster };
+                MapItem item = cluster[itemIdx];
+                Point normalizedMercator = item.Location.ToNormalizedMercator();
+                sumX += normalizedMercator.X;
+                sumY += normalizedMercator.Y;
             }
+
+            Point clusterMean = new Point(sumX / cluster.Count, sumY / cluster.Count);
+
+            // Pick the item that is nearest the center of mass.
+            int nearestItemIdx = -1;
+            double nearestDistSqr = double.MaxValue;
+            for (int itemIdx = 0; itemIdx < cluster.Count; itemIdx++)
+            {
+                MapItem item = cluster[itemIdx];
+
+                Point centroid = item.BoundingRectAtZoomLevel(zoomLevel).Centroid;
+
+                double distSqr = clusterMean.DistanceSquared(centroid);
+
+                if (distSqr < nearestDistSqr)
+                {
+                    nearestDistSqr = distSqr;
+                    nearestItemIdx = itemIdx;
+                }
+            }
+
+            return cluster[nearestItemIdx];
         }
     }
 }

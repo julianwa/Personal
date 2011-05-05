@@ -83,6 +83,16 @@ namespace MapItemClustering
         }
 
         /// <summary>
+        /// Returns the square of the distance from this point to the other.
+        /// </summary>
+        public static double DistanceSquared(this Point point, Point other)
+        {
+            double dx = point.X - other.X;
+            double dy = point.Y - other.Y;
+            return dx * dx + dy * dy;
+        }
+
+        /// <summary>
         /// Returns the distance between this Rect and the other.
         /// </summary>
         public static double DistanceFrom(this Rect rect, Rect other)
@@ -94,9 +104,9 @@ namespace MapItemClustering
         }
 
         /// <summary>
-        /// Returns the distance from the this rect to the given point.
+        /// Returns the square of the distance from this rect to the given point.
         /// </summary>
-        public static double DistanceFrom(this Rect rect, Point point)
+        public static double DistanceSquared(this Rect rect, Point point)
         {
             double dx = 0;
             if (point.X < rect.Left)
@@ -110,7 +120,7 @@ namespace MapItemClustering
             else if (point.Y > rect.Bottom)
                 dy = point.Y - rect.Bottom;
 
-            return Math.Sqrt(dx * dx + dy * dy);
+            return dx * dx + dy * dy;
         }
 
         /// <summary>

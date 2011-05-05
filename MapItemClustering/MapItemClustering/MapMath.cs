@@ -21,8 +21,16 @@ namespace MapItemClustering
 
         /// <summary>
         /// Clamps the value x to the range [a,b]
-        /// </summary>        
+        /// </summary> 
         public static double Clamp(double x, double a, double b)
+        {
+            return Math.Max(a, Math.Min(b, x));
+        }
+
+        /// <summary>
+        /// Clamps the value x to the range [a,b]
+        /// </summary> 
+        public static int Clamp(int x, int a, int b)
         {
             return Math.Max(a, Math.Min(b, x));
         }

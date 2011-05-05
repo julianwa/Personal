@@ -13,7 +13,7 @@ using System.Linq;
 
 namespace MapItemClustering
 {
-    public class KMeansClustering
+    public static class KMeansClustering
     {
         private static Random _Random = new Random(0);
 
@@ -72,7 +72,7 @@ namespace MapItemClustering
 
                         for (int clusterIdx = 0; clusterIdx < numClusters; clusterIdx++)
                         {
-                            double distance = items[itemIdx].Rect.DistanceFrom(clusterCenters[clusterIdx]);
+                            double distance = Math.Sqrt(items[itemIdx].Rect.DistanceSquared(clusterCenters[clusterIdx]));
                             if (distance < minDistance)
                             {
                                 minDistanceCluster = clusterIdx;
