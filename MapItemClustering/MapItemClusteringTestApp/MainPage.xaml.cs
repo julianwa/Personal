@@ -121,9 +121,20 @@ namespace MapItemClusteringTestApp
                     _LodBiasSlider.DiscreteValue -= 1;
                 }
             }
+            else if (e.Key == Key.Z)
+            {
+                if ((Keyboard.Modifiers & ModifierKeys.Shift) == 0)
+                {
+                    _Map.ZoomLevel += 1;
+                }
+                else
+                {
+                    _Map.ZoomLevel -= 1;
+                }
+            }
         }
 
-        void item_InViewChanged(object sender, EventArgs e)
+        private void item_InViewChanged(object sender, EventArgs e)
         {
             MapItem item = (MapItem)sender;
 

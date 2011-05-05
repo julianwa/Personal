@@ -108,6 +108,27 @@ namespace MapItemClustering
             return false;
         }
 
+        /// <summary>
+        /// Returns the normalized mercator rect as rect in the space [0,0,2,1].
+        /// </summary>
+        public Rect AsRect()
+        {
+            if (_Rects.Length == 1)
+            {
+                return _Rects[0];
+            }
+            else
+            {
+                Debug.Assert(_Rects[1].Left > _Rects[0].Left);
+
+                return new Rect(
+                    _Rects[1].Left,
+                    _Rects[1].Top,
+                    _Rects[0].Width + _Rects[1].Width,
+                    _Rects[0].Height + _Rects[1].Height);
+            }
+        }
+
         private void InitRects(Point nw, Point se)
         {
             Debug.Assert(new Rect(0, 0, 1, 1).Contains(nw));

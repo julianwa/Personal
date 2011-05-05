@@ -81,5 +81,52 @@ namespace MapItemClustering
             ix.Intersect(rect);
             return ix == other;
         }
+
+        /// <summary>
+        /// Returns the distance between this Rect and the other.
+        /// </summary>
+        public static double DistanceFrom(this Rect rect, Rect other)
+        {
+            double dx = Math.Max(0.0, Math.Abs(rect.X - other.X) - 0.5 * (rect.Width + other.Width));
+            double dy = Math.Max(0.0, Math.Abs(rect.Y - other.Y) - 0.5 * (rect.Height + other.Height));
+
+            return Math.Sqrt(dx * dx + dy * dy);
+        }
+
+        /// <summary>
+        /// Returns the distance from the this rect to the given point.
+        /// </summary>
+        public static double DistanceFrom(this Rect rect, Point point)
+        {
+            double dx = 0;
+            if (point.X < rect.Left)
+                dx = rect.Left - point.X;
+            else if (point.X > rect.Right)
+                dx = point.X - rect.Right;
+
+            double dy = 0;
+            if (point.Y < rect.Top)
+                dy = rect.Top - point.Y;
+            else if (point.Y > rect.Bottom)
+                dy = point.Y - rect.Bottom;
+
+            return Math.Sqrt(dx * dx + dy * dy);
+        }
+
+        /// <summary>
+        /// Returns the centroid of the rect.
+        /// </summary>
+        public static Point Centroid(this Rect rect)
+        {
+            return new Point(rect.X + 0.5 * rect.Width, rect.Y + 0.5 * rect.Height);
+        }
+
+        /// <summary>
+        /// Returns a copy of the Rect translated by the specified amount.
+        /// </summary>
+        public static Rect Translated(this Rect rect, Point translation)
+        {
+            return new Rect(new Point(rect.X + translation.X, rect.Y + translation.Y), new Size(rect.Width, rect.Height));
+        }
     }
 }

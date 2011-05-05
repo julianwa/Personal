@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapItemClusteringTestApp", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapItemClusteringTestApp.Web", "MapItemClusteringTestApp.Web\MapItemClusteringTestApp.Web.csproj", "{8B56A727-FBAA-4CCA-82A2-902E99398466}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KMeansClusteringTestApp", "KMeansClusteringTestApp\KMeansClusteringTestApp.csproj", "{07B46B9B-7C0C-4615-A9A8-6858D74004A7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,6 +27,10 @@ Global
 		{8B56A727-FBAA-4CCA-82A2-902E99398466}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8B56A727-FBAA-4CCA-82A2-902E99398466}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8B56A727-FBAA-4CCA-82A2-902E99398466}.Release|Any CPU.Build.0 = Release|Any CPU
+		{07B46B9B-7C0C-4615-A9A8-6858D74004A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{07B46B9B-7C0C-4615-A9A8-6858D74004A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07B46B9B-7C0C-4615-A9A8-6858D74004A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{07B46B9B-7C0C-4615-A9A8-6858D74004A7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

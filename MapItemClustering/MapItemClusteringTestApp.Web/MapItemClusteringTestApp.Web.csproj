@@ -13,7 +13,7 @@
     <RootNamespace>MapItemClusteringTestApp.Web</RootNamespace>
     <AssemblyName>MapItemClusteringTestApp.Web</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <SilverlightApplicationList>{50DAC9C8-FEF3-47E7-8BA9-4016E4F870C5}|..\MapItemClusteringTestApp\MapItemClusteringTestApp.csproj|ClientBin|False</SilverlightApplicationList>
+    <SilverlightApplicationList>{50DAC9C8-FEF3-47E7-8BA9-4016E4F870C5}|..\MapItemClusteringTestApp\MapItemClusteringTestApp.csproj|ClientBin|False,{07B46B9B-7C0C-4615-A9A8-6858D74004A7}|..\KMeanClusteringTestApp\KMeanClusteringTestApp.csproj|ClientBin|False</SilverlightApplicationList>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -51,7 +51,11 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="ClientBin\KMeanClusteringTestApp.xap" />
+    <Content Include="ClientBin\KMeansClusteringTestApp.xap" />
     <Content Include="ClientBin\MapItemClusteringTestApp.xap" />
+    <Content Include="KMeansClusteringTestAppTestPage.aspx" />
+    <Content Include="KMeansClusteringTestAppTestPage.html" />
     <Content Include="MapItemClusteringTestAppTestPage.aspx" />
     <Content Include="MapItemClusteringTestAppTestPage.html" />
     <Content Include="Silverlight.js" />

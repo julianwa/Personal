@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows;
 using Microsoft.Maps.MapControl;
+using System.Collections.Generic;
 
 namespace MapItemClustering
 {
@@ -15,6 +16,11 @@ namespace MapItemClustering
         /// True if the map item is currently in view.
         /// </summary>
         private bool _InView;
+
+        /// <summary>
+        /// The children of this map item.
+        /// </summary>
+        private List<MapItem> _Children;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MapItem"/> class.
@@ -37,8 +43,28 @@ namespace MapItemClustering
             Location = location;
             MinZoomLevel = minZoomLevel;
             MaxZoomLevel = maxZoomLevel;
+
+            _Children = new List<MapItem>();
         }
 
+        /// <summary>
+        /// Gets or sets the parent map item, which is optionally used if map items are
+        /// composed hierarchically. 
+        /// </summary>
+        public MapItem Parent
+        {
+            get;
+            internal set;
+        }
+
+        /// <summary>
+        /// Gets or sets the children, which is optionally used if map items are composed
+        /// hierarchically.
+        /// </summary>        
+        public IEnumerable<MapItem> Children
+        {
+            get { return _Children; }
+        }
 
         /// <summary>
         /// Gets the location of the map item.
@@ -121,5 +147,10 @@ namespace MapItemClustering
         /// <returns>The bounding rectangle of the map item at the given zoom level in 
         /// the form of a normalized mercator rectangle.</returns>
         public abstract NormalizedMercatorRect BoundingRectAtZoomLevel(double zoomLevel);
+
+        internal void AddChild(MapItem child)
+        {
+            _Children.Add(child);
+        }
     }
 }
