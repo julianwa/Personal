@@ -147,6 +147,14 @@ namespace MapItemClustering
                             Parent = clusterItem
                         };
 
+                        // We're removing the item, so re-assign the children's parent to the cluster that's
+                        // standing in for it.
+                        foreach (var child in item.Children)
+                        {
+                            child.Parent = adjustedItem;
+                            adjustedItem.AddChild(child);
+                        }
+
                         clusterItem.AddChild(adjustedItem);
 
                         tree.Add(adjustedItem);
