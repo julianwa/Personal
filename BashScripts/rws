@@ -1,3 +1,20 @@
-find $1 -type f -name *.js -print0 | xargs -0 sed -i "" -E "s/[[:space:]]*$//"
-find $1 -type f -name *.html -print0 | xargs -0 sed -i "" -E "s/[[:space:]]*$//"
-find $1 -type f -name *.css -print0 | xargs -0 sed -i "" -E "s/[[:space:]]*$//"
+#!/bin/sh
+
+EXTENSIONS="js html css py cpp h mm m vsh fsh"
+FIND_PATH=$1
+
+if [ -z $1 ]; then
+    FIND_PATH="."
+fi
+
+FIND_ARGS="$FIND_PATH -type f"
+
+for ext in js html css py cpp h mm m
+do
+    if [ $ext != "js" ]; then
+        FIND_ARGS="$FIND_ARGS -o"
+    fi
+    FIND_ARGS="$FIND_ARGS -iname \"*.$ext\""
+done
+
+find $FIND_ARGS -print0 | xargs -0 sed -i "" -E "s/[[:space:]]*$//"
